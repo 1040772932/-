@@ -1,0 +1,515 @@
+#include <bits/stdc++.h>
+#include <windows.h>
+using namespace std;
+struct pig {              //猪信息用链表链接
+	int type;            //用1、2、3表示种类；
+	double weight;
+	int time;
+	pig*next;
+};
+class pigsty {
+		pig*head;     //每个个猪圈定义一个头结点
+		pig*end;      //定义尾结点
+		int all=0;     //猪圈猪总数
+	public:
+
+		void creatlist() { //初始化头结点
+			head=new pig;
+			head->next=NULL;
+		}
+
+		void linklist(int n) {  //链表的链接     n->type
+			pig*pnew;
+			if(head->next==NULL) {   //若只有头结点 新增尾结点 给头结点赋值
+				end=new pig;
+				end->next==NULL;
+				head->type=n;
+				head->weight=rand()%31+20;
+				head->time=0;
+				head->next=end;
+			} else {       //存在尾结点 给尾结点赋值 新增结点，尾结点指向新增结点
+				pnew=new pig;
+				pnew->next=NULL;
+				end->type=n;
+				end->weight=rand()%31+20;
+				end->time=0;
+				end->next=pnew;
+				end=pnew;
+			}
+		}
+
+		void  addall(int n) {       //统计猪圈猪的总数    n=1or-1
+			all+=n;
+		}
+
+		void  W_gain() {           //    遍历链表每次随机每头猪的增加重量 并加入weight
+			for(int t=0; t<all; t++) {
+				double tmp=rand()%13;
+				tmp/=10.0;
+				pig*ptmp;
+				ptmp=head;
+				for(int s=0; s<t; s++)  ptmp=ptmp->next;
+				int s;
+				s=ptmp->weight;
+				tmp+=s;
+				ptmp->weight=tmp;
+				ptmp->time=ptmp->time+1;   //时间自增1
+			}
+		}
+
+
+		void sold(int &subnum,int &price,int &sold_black) {                   //卖猪并更新all 同事计算卖猪所得收入
+			pig*tmpt,*tmpt1;
+			tmpt=head;
+			for(int t=0; t<all; t++) {
+				if(tmpt==head&&(head->weight>75||head->time>360)) {
+					addall(-1);
+					head=head->next;
+					if(tmpt->type==1) {
+						int tmp;
+						sold_black++;
+						tmp=15*2*tmpt->weight;
+						price+=tmp;
+					} else if(tmpt->type==2) {
+						int tmp;
+						tmp=7*2*tmpt->weight;
+						price+=tmp;
+					} else {
+						int tmp;
+						tmp=6*2*tmpt->weight;
+						price+=tmp;
+					}
+					delete tmpt;
+					tmpt=head;
+					subnum++;
+				} else {
+					if(tmpt->weight>75||tmpt->time>360) {
+						addall(-1);
+						pig*pdel;
+						pdel=tmpt;
+						tmpt=tmpt->next;
+						tmpt1->next=tmpt;
+						if(pdel->type==1) {
+							int tmp;
+							sold_black++;
+							tmp=15*2*pdel->weight;
+							price+=tmp;
+						} else if(pdel->type==2) {
+							int tmp;
+							tmp=7*2*pdel->weight;
+							price+=tmp;
+						} else {
+							int tmp;
+							tmp=6*2*pdel->weight;
+							price+=tmp;
+						}
+						delete pdel;
+						subnum++;
+					}
+				}
+				tmpt1=tmpt;
+				tmpt=tmpt->next;
+			}
+		}
+
+		void out(int n) {                     //t
+			pig*ptmp1;
+			if(n==1) cout<<head->type<<" "<<head->weight<<endl;
+			else {
+				ptmp1=head;
+				for(int t=1; t<n; t++) {
+					ptmp1=ptmp1->next;
+				}
+				cout<<ptmp1->type<<" "<<ptmp1->weight<<endl;
+			}
+		}
+
+		void is_blank(int n) {       //记录空猪圈号+1
+			if(all==0) {
+				n++;
+			}
+		}
+
+		void addto_aver(int aver,int &num_black) {      //向猪圈加猪至平均数
+			while(num_black) {
+				if(all<aver) {
+					linklist(1);
+					num_black--;
+					addall(1);
+				} else break;
+			}
+		}
+
+		void addaver(int aver,int &num_black) {      //猪圈猪平均数基础上加猪
+			if(all==aver) {
+				linklist(1);
+				num_black--;
+				addall(1);
+			}
+		}
+
+		void change(pigsty sty[],int &subblacksty,int aver) {      //将多出来的黑猪圈中黑猪转入之前的圈
+			if(sty[subblacksty].all==0) subblacksty++;
+			pig*tmpt;
+			if(all<aver) {
+				tmpt=sty[subblacksty].head;
+				sty[subblacksty].head=sty[subblacksty].head->next;
+				tmpt->next=head;
+				head=tmpt;
+				addall(1);
+			}
+		}
+
+		void swift(int aver,pigsty sty[],int &tmpsty) {
+			if(sty[tmpsty].all==0)  tmpsty++;
+			pig*tmpt;
+			if(all<aver) {
+				tmpt=sty[tmpsty].head;
+				sty[tmpsty].head=sty[tmpsty].head->next;
+				tmpt->next=head;
+				head=tmpt;
+				addall(1);
+			}
+		}
+		
+		void tmp(){
+			cout<<all<<endl;
+		} 
+
+
+} sty[100];
+
+void randnum(int num,int &a,int &b,int &c) {  //随机生成并统计不同猪的数量
+	int tmp=0;
+	for(int t=0; t<num; t++) {
+		tmp=rand()%3+1;
+		if(tmp==1) a++;
+		else if (tmp==2) b++;
+		else c++;
+	}
+}
+
+void input(pigsty sty[],int addnum,int num,int &blacksty,int snum) {
+	int num_black,num_little,num_big;
+	num_black=0;
+	num_little=0;
+	num_big=0;
+	randnum(addnum,num_black,num_little,num_big);      //随机生成并统计不同种类猪
+	int ss=0;
+	for(int t=0; t<100; t++) sty[t].is_blank(ss);
+	if(!ss) {        //判断是否有空圈 若有判断是否将黑猪加入新圈
+		int aver1,aver2;
+
+		//新黑猪入圈
+		aver1=(num_black+snum)/blacksty;         //黑猪圈平均猪数
+		for(int t=0; t<blacksty; t++) {
+			if(num_black==0) break;
+			sty[t].addto_aver(aver1,num_black);
+		}                 //向猪圈加猪至平均值
+		while(num_black) {        //平均数的基础上增加猪
+			for(int t=0; t<blacksty; t++) {
+				if(num_black==0) break;
+				sty[t].addaver(aver1,num_black);
+			}
+			aver1++;
+		}
+		//新黑猪入圈完成
+
+		//剩余猪入圈
+		aver2=(num-snum+num_little+num_big)/(100-blacksty);
+		for(int t=blacksty; t<100; t++) {
+			if(num_little==0) break;
+			sty[t].addto_aver(aver2,num_little);
+		}
+		while(num_little) {        //平均数的基础上增加猪
+			for(int t=blacksty; t<100; t++) {
+				if(num_little==0) break;
+				sty[t].addaver(aver2,num_little);
+			}
+			aver2++;
+		}
+		for(int t=blacksty; t<100; t++) {
+			if(num_big==0) break;
+			sty[t].addto_aver(aver2,num_big);
+		}
+		while(num_big) {        //平均数的基础上增加猪
+			for(int t=blacksty; t<100; t++) {
+				if(num_big==0) break;
+				sty[t].addaver(aver2,num_big);
+			}
+			aver2++;
+		}
+	} else {
+		int aver,aver1,aver2,avertmp,nblacksty;
+		aver=(num+addnum)/100;           //理论平均数
+		avertmp=(snum+num_black)/blacksty;   //现实平均数
+		if(avertmp<aver) {            //黑猪圈多
+			nblacksty=(snum+num_black)/aver;
+			int subblacksty;
+			subblacksty=nblacksty;
+			while(1) {
+				for(int tmpsty=0; tmpsty<nblacksty; tmpsty++) {
+					if(subblacksty==blacksty)break;
+					sty[tmpsty].change(sty,subblacksty,aver);
+				}
+				if(subblacksty==blacksty)break;
+			}
+			blacksty=nblacksty;         //原黑猪进相应猪圈数
+			for(int t=0; t<blacksty; t++) { //每圈加至平均数
+				if(num_black==0) break;
+				sty[t].addto_aver(aver,num_black);
+			}
+			aver1=aver;
+			while(num_black) {        //平均数的基础上增加猪
+				for(int t=0; t<blacksty; t++) {
+					if(num_black==0) break;
+					sty[t].addaver(aver1,num_black);
+				}
+				aver1++;
+			}
+			//至此黑猪新录入完成
+
+			//在剩余猪圈存入小花猪和大白花猪
+			for(int t=blacksty; t<100; t++) { //每圈加至平均数
+				if(num_little==0) break;
+				sty[t].addto_aver(aver,num_little);
+			}
+			aver2=aver;
+			while(num_little) {        //平均数的基础上增加猪
+				for(int t=blacksty; t<100; t++) {
+					if(num_little==0) break;
+					sty[t].addaver(aver2,num_little);
+				}
+				aver2++;
+			}
+			for(int t=blacksty; t<100; t++) { //每圈加至平均数
+				if(num_big==0) break;
+				sty[t].addto_aver(aver,num_big);
+			}
+			aver2=aver;
+			while(num_big) {        //平均数的基础上增加猪
+				for(int t=blacksty; t<100; t++) {
+					if(num_big==0) break;
+					sty[t].addaver(aver2,num_big);
+				}
+				aver2++;
+			}
+		} else if(avertmp>aver) {       //黑猪圈不足
+			nblacksty=(snum+num_black)/aver;
+			int tmpsty;
+			tmpsty=blacksty;
+			while(1) {
+				for(int t=nblacksty; t<100; t++) {
+					if(tmpsty==nblacksty) break;
+					sty[t].swift(aver,sty,tmpsty);
+				}
+				if(tmpsty==nblacksty) break;
+			}
+			blacksty=nblacksty;
+			for(int t=0; t<blacksty; t++) { //每圈加至平均数
+				if(num_black==0) break;
+				sty[t].addto_aver(aver,num_black);
+			}
+			aver1=aver;
+			while(num_black) {        //平均数的基础上增加猪
+				for(int t=0; t<blacksty; t++) {
+					if(num_black==0) break;
+					sty[t].addaver(aver1,num_black);
+				}
+				aver1++;
+			}
+			//至此黑猪新录入完成
+
+			//在剩余猪圈存入小花猪和大白花猪
+			for(int t=blacksty; t<100; t++) { //每圈加至平均数
+				if(num_little==0) break;
+				sty[t].addto_aver(aver,num_little);
+			}
+			aver2=aver;
+			while(num_little) {        //平均数的基础上增加猪
+				for(int t=blacksty; t<100; t++) {
+					if(num_little==0) break;
+					sty[t].addaver(aver2,num_little);
+				}
+				aver2++;
+			}
+			for(int t=blacksty; t<100; t++) { //每圈加至平均数
+				if(num_big==0) break;
+				sty[t].addto_aver(aver,num_big);
+			}
+			aver2=aver;
+			while(num_big) {        //平均数的基础上增加猪
+				for(int t=blacksty; t<100; t++) {
+					if(num_big==0) break;
+					sty[t].addaver(aver2,num_big);
+				}
+				aver2++;
+			}
+		} else {
+			for(int t=0; t<blacksty; t++) { //每圈加至平均数
+				if(num_black==0) break;
+				sty[t].addto_aver(aver,num_black);
+			}
+			aver1=aver;
+			while(num_black) {        //平均数的基础上增加猪
+				for(int t=blacksty; t<100; t++) {
+					if(num_black==0) break;
+					sty[t].addaver(aver2,num_black);
+				}
+				aver1++;
+			}
+			for(int t=blacksty; t<100; t++) { //每圈加至平均数
+				if(num_little==0) break;
+				sty[t].addto_aver(aver,num_little);
+			}
+			aver2=aver;
+			while(num_little) {        //平均数的基础上增加猪
+				for(int t=blacksty; t<100; t++) {
+					if(num_little==0) break;
+					sty[t].addaver(aver2,num_little);
+				}
+				aver2++;
+			}
+			for(int t=blacksty; t<100; t++) { //每圈加至平均数
+				if(num_big==0) break;
+				sty[t].addto_aver(aver,num_big);
+			}
+			aver2=aver;
+			while(num_big) {        //平均数的基础上增加猪
+				for(int t=blacksty; t<100; t++) {
+					if(num_big==0) break;
+					sty[t].addaver(aver2,num_big);
+				}
+				aver2++;
+			}
+		}
+	}
+}
+
+int main() {
+
+
+	//对猪圈原有猪进行初始化
+
+
+
+
+
+	for(int t=0; t<100; t++) sty[t].creatlist();
+	int num=300;
+	//num=rand()%1001;
+	int num_black,num_little,num_big,aver,sty_num,snum;
+	num_black=0;
+	num_little=0;
+	num_big=0;
+	randnum(num,num_black,num_little,num_big);    //随机生成并统计不同种类猪
+	snum=num_black;
+	if(num<100) aver=1;    //求猪圈平均值
+	else aver=num/100;
+	int blacksty;
+	blacksty=num_black/aver;                   //黑猪所需猪圈数
+	for(int m=0; m<aver; m++) {          //实现平均初始化黑猪
+		for(int t=0; t<blacksty; t++) {
+			sty[t].linklist(1);
+			sty[t].addall(1);
+		}
+		num_black-=blacksty;                       //每个黑猪圈依次放入黑猪
+	}
+	if(num_black) for(int t=0; t<num_black; t++) {
+			sty[t].linklist(1);
+			sty[t].addall(1);
+		} //平均后所剩黑猪在依次放入
+	int rest,t,boo=0;
+	rest=100-blacksty;               //剩下的猪圈一次放入小花猪、大白花猪
+	t=blacksty;
+	for(;; t++) {                //放入小白猪
+		sty[t].linklist(2);
+		sty[t].addall(1);
+		num_little--;
+		if(num_little<=0)break;
+		if(t==99) {
+			t=blacksty-1;
+			boo=1;
+		}
+	}
+	t++;
+	for(;; t++) {             //放入大白花猪
+		sty[t].linklist(3);
+		sty[t].addall(1);
+		num_big--;
+		if(num_big<=0)break;
+		if(t==99){
+			t=blacksty-1;
+			boo=1;
+		} 
+	}
+	t++;
+	if(boo) sty_num=100;
+	else sty_num=t;
+	for(int t=0;t<100;t++) sty[t].tmp();        //t
+
+
+
+
+	//自此初始化内容完成
+
+	//for(int t=0;t<30;t++) for(int s=0;s<1;s++) sty[t].out(s);          //t
+
+	//cout<<endl<<endl<<endl<<endl<<endl<<endl<<endl<<endl<<endl<<endl<<endl<<endl;
+
+	//类似可视化界面
+
+
+
+	//cout<<endl<<endl<<endl<<endl;
+	//cout<<"                   ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n";
+	//cout<<"                   ┃                                             ┃\n";
+	//cout<<"                   ┃                                             ┃\n";;
+	//cout<<"                   ┃            努力养猪中！！！！！！！         ┃\n";;
+	//cout<<"                   ┃                                             ┃\n";;
+	//cout<<"                   ┃                                             ┃\n";;
+	//cout<<"                   ┃           （按Q进入查询界面）               ┃\n";;
+	//cout<<"                   ┃                                             ┃\n";;
+	//cout<<"                   ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n";
+
+
+	//
+
+
+
+	//下面实现每隔一段时间猪的自增
+	//每三个三个月的出售
+	//每三个月随机加入一定数量的猪
+	//按q进入查询阶段
+	int TIME=0;
+	while(1) {
+
+		for(int t=0; t<sty_num; t++) sty[t].W_gain();        //每天增长重量
+		//Sleep(500);
+		TIME++;
+		if(TIME%90==0&&TIME!=0)  {
+			cout<<endl<<endl<<endl<<endl;
+			int subnum=0,price=0,sold_black=0;
+			for(int t=0; t<sty_num; t++) sty[t].sold(subnum,price,sold_black);    //卖猪
+			num=num-subnum;
+			snum-=sold_black;
+			int addnum,limit;
+			limit=1000-num;
+			addnum=rand()%limit+1;
+			input(sty,addnum,num,blacksty,snum);
+			for(int t=0;t<100;t++) 
+			for(int t=0;t<100;t++) sty[t].tmp();        //t
+			if(TIME==360)  break;
+			//实现新猪自动平均入圈
+
+		}
+	}
+
+
+
+
+
+
+
+	return 0;
+}
